@@ -1,7 +1,12 @@
 [
   {
-    "username": "Aadi",
-    "salt": "7fea031ce6588e043db4a220772c8c72",
-    "pw_hash": "187928b976a0b2352a04a7c0373fac2d82edf242e5448f1dade9bf2d759bd6a5"
+    "username": "Ray",
+    "salt": "21fee019fe8afe9a653d8072fdfa1d78",
+    "pw_hash": "b676f04a4d54402f8f9d23c2a9bb500265d283a536b003be69e9c00d2e180ead"
+  },
+  {
+    "username": "Dylan",
+    "salt": "02ff40e215c1c60e4b8f142dc2528f7b",
+    "pw_hash": "e8c83a9d4f5183650670d6d08ecf3983b895e1e1108a07003da10908c3eedbd1"
   }
 ]

@@ -1,0 +1,14 @@
+{
+  "device_id": "PM-B-9999",
+  "param_set": {
+    "mode": "VVI",
+    "LRL": 50,
+    "URL": 110,
+    "A_amp": 0.0,
+    "A_pw": 0.0,
+    "V_amp": 3.0,
+    "V_pw": 0.4,
+    "VRP": 240,
+    "ARP": 0
+  }
+}
