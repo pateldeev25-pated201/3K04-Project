@@ -372,6 +372,9 @@ class WelcomeApp(tk.Tk):
 		selection = self.device_var.get()
 		if not selection or selection == "(none)":
 			return
+		# If user re-selects the currently loaded file, do nothing
+		if selection == self.current_file:
+			return
 		# load the selected file
 		self._append_log(f"Selecting file {selection}")
 		device_id, params = load_params_from_file(selection)
@@ -379,18 +382,40 @@ class WelcomeApp(tk.Tk):
 			self._append_log(f"Failed to load {selection}")
 			messagebox.showerror("Load error", f"Could not read {selection}")
 			return
-		# compare with last device
-		compare = self.device_mgr.compare_with_last(device_id)
-		if compare == "different":
+		# If we are currently connected to a different device, prompt the user
+		if self.current_device and self.current_device.get("device_id") != device_id:
 			resp = messagebox.askyesno("Different pacemaker detected",
-				f"Device {device_id} (from {selection}) differs from last interrogated ({self.device_mgr.last.get('device_id')}).\n\nAccept new device and load its parameters?")
+				f"Device {device_id} (from {selection}) differs from currently connected ({self.current_device.get('device_id')}).\n\nSwitch to new device?")
 			if not resp:
-				self._append_log("User cancelled loading new device")
+				self._append_log("User cancelled switching device")
 				# revert dropdown to previous file (if any)
 				if self.current_file:
-					self.device_var.set(self.current_file)
+					try:
+						self.device_var.set(self.current_file)
+					except Exception:
+						pass
 				return
-		# accept and load
+			# record the previous (currently connected) device as last since we're switching away
+			try:
+				self.device_mgr.set_last(self.current_device)
+			except Exception as e:
+				self._append_log(f"Error recording last device: {e}")
+		else:
+			# No current device — fall back to comparing with persisted last device
+			compare = self.device_mgr.compare_with_last(device_id)
+			if compare == "different":
+				resp = messagebox.askyesno("Different pacemaker detected",
+					f"Device {device_id} (from {selection}) differs from last interrogated ({self.device_mgr.last.get('device_id')}).\n\nAccept new device and load its parameters?")
+				if not resp:
+					self._append_log("User cancelled loading new device")
+					# revert dropdown to previous file (if any)
+					if self.current_file:
+						try:
+							self.device_var.set(self.current_file)
+						except Exception:
+							pass
+					return
+	# accept and load
 		self.current_file = selection
 		self.current_device = {"device_id": device_id, "param_set": params, "model": ""}
 		self._load_params_into_ui(params)
