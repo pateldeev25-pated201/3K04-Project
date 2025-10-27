@@ -6,6 +6,7 @@ import hashlib
 import secrets
 import time
 import glob
+from typing import Optional
 
 # -----------------------
 # Files / config
@@ -13,11 +14,193 @@ import glob
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 USERS_FILE = os.path.join(BASE_DIR, "users.json")
 LAST_DEVICE_FILE = os.path.join(BASE_DIR, "last_device.json")
+EGRAM_DIR = os.path.join(BASE_DIR, "egrams")
 
 MAX_USERS = 10
 
 # Modes for dropdown
-MODE_OPTIONS = ["AOO", "VOO", "AAI", "VVI"]
+MODE_OPTIONS = ["AOO", "VOO", "AAI", "VVI", "DOO", "DDD", "DDI", "VDD", "AOOR", "VOOR", "AAIR", "VVIR", "DDDR", "AAT", "VVT", "VDDR", "DOOR", "DDIR"]
+
+# Required parameters (display label, canonical key, unit)
+REQUIRED_PARAMS = [
+	("Lower Rate Limit", "LRL", "bpm"),
+	("Upper Rate Limit", "URL", "bpm"),
+	("Atrial Amplitude", "A_atrial_amp", "V"),
+	("Atrial Pulse Width", "A_pulse_width", "ms"),
+	("Ventricular Amplitude", "V_ventricular_amp", "V"),
+	("Ventricular Pulse Width", "V_pulse_width", "ms"),
+	("VRP", "VRP", "ms"),
+	("ARP", "ARP", "ms"),
+]
+
+# Map which canonical params are programmable per mode (approximate mapping from Table 6)
+PARAMS_BY_MODE = {
+	# Per Table 6 (programmatic mapping for the 8 required params)
+	# Lower Rate Limit and Upper Rate Limit are programmable in essentially all pacing modes
+	# Atrial-specific parameters enabled for atrial-only and dual modes; ventricular-specific for ventricular-only and dual modes
+	# We use normalized mode keys (lowercase) for lookup in _mode_allowed_params
+	"aoo": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "ARP"},
+	"aai": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "ARP"},
+	"aoor": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "ARP"},
+	"aair": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "ARP"},
+	"aat": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "ARP"},
+
+	"voo": {"LRL", "URL", "V_ventricular_amp", "V_pulse_width", "VRP"},
+	"vvi": {"LRL", "URL", "V_ventricular_amp", "V_pulse_width", "VRP"},
+	"voor": {"LRL", "URL", "V_ventricular_amp", "V_pulse_width", "VRP"},
+	"vvir": {"LRL", "URL", "V_ventricular_amp", "V_pulse_width", "VRP"},
+	"vvt": {"LRL", "URL", "V_ventricular_amp", "V_pulse_width", "VRP"},
+
+	"doo": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
+	"ddd": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
+	"ddi": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
+	"vdd": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
+	"dddr": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
+	"vddr": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
+	"door": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
+	"ddir": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
+}
+
+# Numeric ranges for required parameters (assumptions -- adjust if you have official ranges):
+# - LRL/URL: beats per minute
+# - Amplitudes: volts
+# - Pulse widths: milliseconds
+# - VRP/ARP: milliseconds
+PARAM_RANGES = {
+	"LRL": (30, 170),
+	"URL": (50, 175),
+	"A_atrial_amp": (0.1, 7.5),
+	"V_ventricular_amp": (0.1, 7.5),
+	"A_pulse_width": (0.1, 2.0),
+	"V_pulse_width": (0.1, 2.0),
+	"VRP": (150, 500),
+	"ARP": (150, 500),
+}
+
+# Defaults for required params when missing
+DEFAULT_VALUES = {
+	"LRL": 60,
+	"URL": 120,
+	"A_atrial_amp": 2.5,
+	"A_pulse_width": 0.5,
+	"V_ventricular_amp": 2.5,
+	"V_pulse_width": 0.5,
+	"VRP": 250,
+	"ARP": 150,
+}
+
+# Optional external authoritative metadata file (if the project supplies exact ranges/units)
+PARAM_METADATA_FILE = os.path.join(BASE_DIR, "param_metadata.json")
+
+
+def _load_param_metadata():
+	"""Load authoritative per-parameter metadata from PARAM_METADATA_FILE if present.
+	Expected JSON shape: { "canon_name": { "unit": "ms|bpm|V|...", "min": <num>, "max": <num>, "default": <num> }, ... }
+	When present, this updates the runtime PARAM_RANGES and DEFAULT_VALUES and updates the unit strings in REQUIRED_PARAMS.
+	"""
+	global PARAM_RANGES, DEFAULT_VALUES, REQUIRED_PARAMS
+	if not os.path.exists(PARAM_METADATA_FILE):
+		return
+	try:
+		with open(PARAM_METADATA_FILE, "r", encoding="utf-8") as f:
+			meta = json.load(f)
+		if not isinstance(meta, dict):
+			return
+		# build new ranges/defaults
+		new_ranges = {}
+		new_defaults = DEFAULT_VALUES.copy()
+		# update REQUIRED_PARAMS units by rebuilding the tuple list
+		new_required = []
+		for display, canon, unit in REQUIRED_PARAMS:
+			entry = meta.get(canon) or meta.get(_normalize_name(canon))
+			if isinstance(entry, dict):
+				# accept keys 'min','max','default','unit'
+				try:
+					if "min" in entry and "max" in entry:
+						new_ranges[canon] = (float(entry["min"]), float(entry["max"]))
+				except Exception:
+					pass
+				if "default" in entry:
+					try:
+						new_defaults[canon] = float(entry["default"])
+					except Exception:
+						pass
+				new_unit = entry.get("unit", unit)
+			else:
+				new_unit = unit
+			new_required.append((display, canon, new_unit))
+		if new_ranges:
+			PARAM_RANGES.update(new_ranges)
+		DEFAULT_VALUES.update(new_defaults)
+		REQUIRED_PARAMS = new_required
+	except Exception:
+		# if anything goes wrong, leave existing defaults in place
+		return
+
+
+# Load param metadata at import time if present
+_load_param_metadata()
+
+# -----------------------
+# Egram data structures and persistence
+# -----------------------
+#
+# Egram JSON schema (per file):
+# {
+#   "device_id": "<device id>",
+#   "recorded_at": "<ISO8601 UTC timestamp>",
+#   "sampling_rate_hz": 1000,                 # samples per second
+#   "duration_ms": 1000,
+#   "params_snapshot": { ... },               # copy of device param_set at recording
+#   "samples": [                               # time-ordered samples
+#       {"t_ms": 0, "atrial_mV": 0.8, "ventricular_mV": 1.1},
+#       {"t_ms": 1, "atrial_mV": 0.9, "ventricular_mV": 1.0},
+#       ...
+#   ]
+# }
+#
+# The DCM will save each egram as a separate JSON file under EGRAM_DIR.
+
+def ensure_egram_dir():
+	if not os.path.exists(EGRAM_DIR):
+		os.makedirs(EGRAM_DIR, exist_ok=True)
+
+
+def save_egram_snapshot(device_id: str, samples: list, params_snapshot: dict, sampling_rate_hz: int = 1000):
+	"""Persist an egram snapshot to a timestamped JSON file.
+
+	Args:
+	  device_id: device identifier string
+	  samples: list of sample dicts (see schema above)
+	  params_snapshot: dict of parameter snapshot
+	  sampling_rate_hz: integer sampling rate
+	Returns: path to saved file
+	"""
+	ensure_egram_dir()
+	payload = {
+		"device_id": device_id,
+		"recorded_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+		"sampling_rate_hz": sampling_rate_hz,
+		"duration_ms": samples[-1]["t_ms"] if samples else 0,
+		"params_snapshot": params_snapshot,
+		"samples": samples,
+	}
+	fname = f"egram_{device_id}_{int(time.time())}.json"
+	path = os.path.join(EGRAM_DIR, fname)
+	with open(path, "w", encoding="utf-8") as f:
+		json.dump(payload, f, indent=2)
+	return path
+
+
+def list_egram_files(device_id: Optional[str] = None) -> list:
+	"""Return list of egram filenames (optionally filtered by device_id)."""
+	ensure_egram_dir()
+	files = sorted(glob.glob(os.path.join(EGRAM_DIR, "egram_*.json")))
+	basenames = [os.path.basename(p) for p in files]
+	if device_id:
+		return [b for b in basenames if b.startswith(f"egram_{device_id}_")]
+	return basenames
+
 
 # -----------------------
 # Simple user utils (kept as your original simple approach)
@@ -134,6 +317,67 @@ def write_params_to_file(basename, device_id, param_set):
 	out["param_set"] = param_set
 	with open(path, "w", encoding="utf-8") as f:
 		json.dump(out, f, indent=2)
+
+
+# Helpers for parameter name normalization and lookup
+def _normalize_name(s: str) -> str:
+	return ''.join(ch.lower() for ch in str(s) if ch.isalnum())
+
+def _find_matching_key(params: dict, target_names: list) -> Optional[str]:
+    """Return the actual key in params that matches any of the target_names (by normalized form), or None."""
+    if not isinstance(params, dict):
+        return None
+    norm_map = { _normalize_name(k): k for k in params.keys() }
+    for t in target_names:
+        nn = _normalize_name(t)
+        if nn in norm_map:
+            return norm_map[nn]
+    return None
+
+
+def _is_number(v) -> bool:
+	"""Return True if value is a number or numeric string."""
+	if v is None:
+		return False
+	try:
+		# allow numeric types and numeric strings
+		float(v)
+		return True
+	except Exception:
+		return False
+
+
+def _mode_allowed_params(mode: Optional[str]) -> set:
+	"""Return set of canonical keys allowed for the provided mode string."""
+	if not mode:
+		return set()
+	m = _normalize_name(mode)
+	return PARAMS_BY_MODE.get(m, set())
+
+
+def _clamp_to_range(name: str, value) -> tuple[bool, str]:
+	"""Return (ok, message). If value not numeric or out of range, ok=False and message contains reason."""
+	# If we don't have authoritative range info, treat as OK (no enforcement)
+	if name not in PARAM_RANGES:
+		return True, ""
+	lo, hi = PARAM_RANGES[name]
+	# ensure numeric
+	try:
+		num = float(value)
+	except Exception:
+		return False, f"Value '{value}' is not numeric"
+	# check bounds
+	if num < lo or num > hi:
+		# try to find unit for nicer messaging
+		unit = ""
+		for _disp, canon, u in REQUIRED_PARAMS:
+			if canon == name:
+				unit = u
+				break
+		if unit:
+			return False, f"{num} {unit} out of range [{lo}..{hi} {unit}]"
+		return False, f"{num} out of range [{lo}..{hi}]"
+	return True, ""
 
 # -----------------------
 # Main Application (login + DCM UI)
@@ -302,8 +546,22 @@ class WelcomeApp(tk.Tk):
 		self.log_text = tk.Text(right, width=48, height=16, state="disabled")
 		self.log_text.pack(pady=(4,0))
 
-		# placeholder for egram viewer
-		tk.Label(f, text="Egram Viewer (placeholder)", fg="gray").pack(side="bottom", pady=(12,0))
+		# placeholder for egram viewer + quick egram actions
+		frame_eg = tk.Frame(f)
+		frame_eg.pack(side="bottom", pady=(12,0))
+		tk.Label(frame_eg, text="Egram Viewer (placeholder)", fg="gray").pack(side="left")
+		# quick egram snapshot / list buttons
+		try:
+			tk.Button(frame_eg, text="Save Egram Snapshot", command=self._ui_save_egram).pack(side="left", padx=(8,4))
+		except Exception:
+			# if ttk isn't imported, fall back
+			btn = tk.Button(frame_eg, text="Save Egram Snapshot", command=self._ui_save_egram)
+			btn.pack(side="left", padx=(8,4))
+		try:
+			tk.Button(frame_eg, text="List Egrams", command=self._ui_list_egms).pack(side="left", padx=(4,0))
+		except Exception:
+			btn2 = tk.Button(frame_eg, text="List Egrams", command=self._ui_list_egms)
+			btn2.pack(side="left", padx=(4,0))
 
 		# initial device list
 		self._refresh_device_list()
@@ -444,35 +702,114 @@ class WelcomeApp(tk.Tk):
 	def _load_params_into_ui(self, params):
 		# clear
 		self._clear_params_view()
-		# Show fields in a grid: label / entry
 		row = 0
-		# Ensure "mode" appears first if present
-		keys = list(params.keys())
-		if "mode" in keys:
-			keys.remove("mode")
-			keys.insert(0, "mode")
-		for k in keys:
-			v = params[k]
+		matched_keys = set()
+		# Mode first (if present) — show as dropdown
+		mode_key = _find_matching_key(params, ["mode"]) if isinstance(params, dict) else None
+		mode_val = ""
+		if mode_key:
+			mode_val = params.get(mode_key, "")
+		# render mode row
+		if mode_key is not None:
+			k = "mode"
+			v = mode_val
+			matched_keys.add(mode_key)
 			tk.Label(self.params_frame, text=f"{k}:").grid(row=row, column=0, sticky="e", padx=(0,6), pady=2)
 			var = tk.StringVar(value=str(v))
-			# If key is 'mode' use dropdown
-			if k.lower() == "mode":
-				options = list(MODE_OPTIONS)
-				if str(v) not in options:
-					options.insert(0, str(v))
-				opt = tk.OptionMenu(self.params_frame, var, *options)
-				opt.config(width=10)
-				opt.grid(row=row, column=1, pady=2)
-				self.param_vars[k] = var
-				self.param_entries[k] = opt
-			else:
+			options = list(MODE_OPTIONS)
+			if str(v) not in options and str(v) != "":
+				options.insert(0, str(v))
+			opt = tk.OptionMenu(self.params_frame, var, *options)
+			opt.config(width=10)
+			opt.grid(row=row, column=1, pady=2)
+			self.param_vars["mode"] = var
+			self.param_entries["mode"] = opt
+			row += 1
+			# attach a trace so mode changes apply constraints
+			try:
+				var.trace_add("write", lambda *a: self._on_mode_changed())
+			except Exception:
+				# older tkinter may use trace
+				var.trace("w", lambda *a: self._on_mode_changed())
+		# Render required params in order
+		for display, canon, unit in REQUIRED_PARAMS:
+			# try to find an existing key that matches this param (many synonyms)
+			found = _find_matching_key(params, [display, canon, display.replace(" ", "")])
+			val = ""
+			if found:
+				val = params.get(found, "")
+				matched_keys.add(found)
+			# show label with unit
+			label_text = f"{display} ({unit}):"
+			tk.Label(self.params_frame, text=label_text).grid(row=row, column=0, sticky="e", padx=(0,6), pady=2)
+			var = tk.StringVar(value=str(val))
+			ent = tk.Entry(self.params_frame, textvariable=var, width=12)
+			ent.grid(row=row, column=1, pady=2)
+			# store under canonical key so saving uses consistent names
+			self.param_vars[canon] = var
+			self.param_entries[canon] = ent
+			row += 1
+		# Render any remaining keys present in params
+		if isinstance(params, dict):
+			for k in params.keys():
+				if k in matched_keys:
+					continue
+				# skip mode as we've already handled it
+				if _normalize_name(k) == _normalize_name("mode"):
+					continue
+				v = params.get(k, "")
+				tk.Label(self.params_frame, text=f"{k}:").grid(row=row, column=0, sticky="e", padx=(0,6), pady=2)
+				var = tk.StringVar(value=str(v))
 				ent = tk.Entry(self.params_frame, textvariable=var, width=12)
 				ent.grid(row=row, column=1, pady=2)
 				self.param_vars[k] = var
 				self.param_entries[k] = ent
-			row += 1
+				row += 1
 		if row == 0:
 			tk.Label(self.params_frame, text="(no params loaded)", fg="gray").pack()
+		# set defaults for any required params that are empty
+		for _, canon, _ in REQUIRED_PARAMS:
+			var = self.param_vars.get(canon)
+			if var is not None and var.get().strip() == "":
+				if canon in DEFAULT_VALUES:
+					var.set(str(DEFAULT_VALUES[canon]))
+		# apply mode constraints (enable/disable fields)
+		# call after widgets are created
+		try:
+			self._on_mode_changed()
+		except Exception:
+			pass
+
+
+	def _on_mode_changed(self):
+		"""Enable/disable required parameter entries based on selected mode and apply defaults."""
+		mode = None
+		mode_var = self.param_vars.get("mode")
+		if mode_var:
+			mode = mode_var.get()
+		allowed = _mode_allowed_params(mode)
+		# iterate required params and enable/disable accordingly
+		for _, canon, _ in REQUIRED_PARAMS:
+			widget = self.param_entries.get(canon)
+			var = self.param_vars.get(canon)
+			if widget is None or var is None:
+				continue
+			if canon in allowed:
+				# enable entry
+				try:
+					widget.config(state="normal")
+				except Exception:
+					# some widgets may be OptionMenu etc; ignore
+					pass
+				# if empty, set default
+				if var.get().strip() == "" and canon in DEFAULT_VALUES:
+					var.set(str(DEFAULT_VALUES[canon]))
+			else:
+				# disable entry so it cannot be edited
+				try:
+					widget.config(state="disabled")
+				except Exception:
+					pass
 
 	def _gather_ui_params(self):
 		if not self.current_device:
@@ -499,6 +836,46 @@ class WelcomeApp(tk.Tk):
 			messagebox.showwarning("No device", "No device selected")
 			return
 		new_params = self._gather_ui_params()
+		# Validate only parameters that are programmable in the selected mode
+		mode_var = self.param_vars.get("mode")
+		mode = mode_var.get() if mode_var else None
+		allowed = _mode_allowed_params(mode)
+		invalid = []
+		range_errors = []
+		for display, canon, unit in REQUIRED_PARAMS:
+			# only validate this required param if it is programmable in current mode
+			if canon not in allowed:
+				continue
+			# if programmable, validate if present in new_params
+			if canon in new_params:
+				v = new_params.get(canon)
+				# allow empty, but if non-empty enforce numeric
+				if v != "" and not _is_number(v):
+					invalid.append(display)
+				# if numeric, check range if known
+				if v != "" and _is_number(v):
+					ok, msg = _clamp_to_range(canon, v)
+					if not ok:
+						range_errors.append(msg)
+		if invalid:
+			messagebox.showerror("Invalid input", f"The following fields must be numeric: {', '.join(invalid)}")
+			return
+		if range_errors:
+			messagebox.showerror("Out of range", "\n".join(range_errors))
+			return
+
+		# Ensure logical relationship: Lower Rate Limit (LRL) must not exceed Upper Rate Limit (URL)
+		lrl_val = new_params.get("LRL")
+		url_val = new_params.get("URL")
+		if lrl_val is not None and url_val is not None and lrl_val != "" and url_val != "":
+			if _is_number(lrl_val) and _is_number(url_val):
+				try:
+					if float(lrl_val) > float(url_val):
+						messagebox.showerror("Invalid rate limits", "Lower Rate Limit (LRL) cannot be greater than Upper Rate Limit (URL).")
+						return
+				except Exception:
+					# if conversion unexpectedly fails, fall through to normal save error handling
+					pass
 		# update current_device record
 		self.current_device["param_set"] = new_params
 		# write back to file
@@ -506,11 +883,150 @@ class WelcomeApp(tk.Tk):
 			write_params_to_file(self.current_file, self.current_device.get("device_id",""), new_params)
 			self._append_log(f"Saved parameters to {self.current_file}")
 			messagebox.showinfo("Saved", f"Parameters saved to {self.current_file}")
-			# update last device snapshot as well
-			# Do not update last-device on save; only record on explicit disconnect
+			# Note: Do not update last-device on save; only record on explicit disconnect
 		except Exception as e:
 			self._append_log(f"Error saving to {self.current_file}: {e}")
 			messagebox.showerror("Save error", f"Could not save: {e}")
+
+	def _ui_save_egram(self):
+		"""UI action: create a small simulated egram and save it to disk."""
+		if not self.current_device:
+			messagebox.showwarning("No device", "No device connected to record egram")
+			return
+		device_id = self.current_device.get("device_id", "unknown")
+		params_snapshot = self.current_device.get("param_set", {})
+		# simple simulated waveform: 200 ms at 1 kHz -> 200 samples
+		sampling_rate = 1000
+		duration_ms = 200
+		samples = []
+		# amplitude scaling: try to use atrial/ventricular amps if present
+		a_amp = None
+		v_amp = None
+		if isinstance(params_snapshot, dict):
+			a_amp = params_snapshot.get("A_atrial_amp") or params_snapshot.get("atrial_amplitude")
+			v_amp = params_snapshot.get("V_ventricular_amp") or params_snapshot.get("ventricular_amplitude")
+		# fallback numeric values
+		try:
+			a_amp = float(a_amp) if a_amp is not None else 1.0
+		except Exception:
+			a_amp = 1.0
+		try:
+			v_amp = float(v_amp) if v_amp is not None else 1.0
+		except Exception:
+			v_amp = 1.0
+		for t in range(0, duration_ms):
+			# simple synthetic signals (sinusoidal small amplitude)
+			s = {
+				"t_ms": t,
+				"atrial_mV": round(a_amp * 0.5 * (1 + __import__("math").sin(2 * __import__("math").pi * t / 50)), 3),
+				"ventricular_mV": round(v_amp * 0.5 * (1 + __import__("math").sin(2 * __import__("math").pi * t / 40)), 3),
+			}
+			samples.append(s)
+		try:
+			path = save_egram_snapshot(device_id, samples, params_snapshot, sampling_rate_hz=sampling_rate)
+			self._append_log(f"Saved egram snapshot to {path}")
+			messagebox.showinfo("Egram saved", f"Saved egram to:\n{path}")
+		except Exception as e:
+			self._append_log(f"Error saving egram: {e}")
+			messagebox.showerror("Egram error", f"Could not save egram: {e}")
+
+	def _ui_list_egms(self):
+		"""UI action: list saved egram files (for current device or all)."""
+		device_id = None
+		if self.current_device:
+			device_id = self.current_device.get("device_id")
+		files = list_egram_files(device_id)
+		if not files:
+			messagebox.showinfo("Egrams", "No egram files found.")
+			return
+		# show in a simple Toplevel with a Listbox
+		win = tk.Toplevel(self)
+		win.title("Saved Egrams")
+		lb = tk.Listbox(win, width=80, height=12)
+		for f in files:
+			lb.insert("end", f)
+		lb.pack(padx=8, pady=8)
+		frame = tk.Frame(win)
+		frame.pack(pady=(0,8))
+		btn_preview = tk.Button(frame, text="Preview Selected", command=lambda: self._preview_selected_egram(lb))
+		btn_preview.pack(side="left", padx=(0,6))
+		btn_close = tk.Button(frame, text="Close", command=win.destroy)
+		btn_close.pack(side="left")
+
+	def _preview_selected_egram(self, listbox: tk.Listbox):
+		sel = None
+		try:
+			i = listbox.curselection()
+			if not i:
+				messagebox.showinfo("Preview", "No file selected")
+				return
+			sel = listbox.get(i[0])
+		except Exception:
+			messagebox.showerror("Preview error", "Could not determine selected file")
+			return
+		self._preview_egram(sel)
+
+	def _preview_egram(self, basename: str):
+		"""Open and draw a simple preview of the egram file on a Canvas."""
+		path = os.path.join(EGRAM_DIR, basename)
+		try:
+			with open(path, "r", encoding="utf-8") as f:
+				payload = json.load(f)
+		except Exception as e:
+			messagebox.showerror("Egram load error", f"Could not load {basename}: {e}")
+			return
+		samples = payload.get("samples", [])
+		if not samples:
+			messagebox.showinfo("Preview", "No samples in egram file")
+			return
+		# Build arrays for plotting
+		times = [s.get("t_ms", 0) for s in samples]
+		atr = [s.get("atrial_mV", 0.0) for s in samples]
+		vent = [s.get("ventricular_mV", 0.0) for s in samples]
+		# create window and canvas
+		w = tk.Toplevel(self)
+		w.title(f"Egram Preview: {basename}")
+		cw = 900; ch = 360
+		canvas = tk.Canvas(w, width=cw, height=ch, bg="white")
+		canvas.pack(padx=8, pady=8)
+		# compute scales
+		t_min, t_max = min(times), max(times)
+		v_min = min(min(atr), min(vent))
+		v_max = max(max(atr), max(vent))
+		# avoid zero-range
+		if v_min == v_max:
+			v_min -= 1.0; v_max += 1.0
+		padx, pady = 40, 20
+		plot_w = cw - 2*padx
+		plot_h = ch - 2*pady
+		# axes
+		canvas.create_rectangle(padx, pady, padx+plot_w, pady+plot_h, outline="#ddd")
+		# map functions
+		def map_x(t):
+			return padx + ((t - t_min) / max(1, (t_max - t_min))) * plot_w
+		def map_y(v):
+			# flip y
+			return pady + plot_h - ((v - v_min) / (v_max - v_min)) * plot_h
+		# draw atrial in blue, ventricular in red
+		pts_a = []
+		pts_v = []
+		for s in samples:
+			t = s.get("t_ms", 0)
+			pts_a.append((map_x(t), map_y(s.get("atrial_mV", 0.0))))
+			pts_v.append((map_x(t), map_y(s.get("ventricular_mV", 0.0))))
+		# draw polylines
+		for idx in range(1, len(pts_a)):
+			canvas.create_line(pts_a[idx-1][0], pts_a[idx-1][1], pts_a[idx][0], pts_a[idx][1], fill="blue")
+		for idx in range(1, len(pts_v)):
+			canvas.create_line(pts_v[idx-1][0], pts_v[idx-1][1], pts_v[idx][0], pts_v[idx][1], fill="red")
+		# legend
+		canvas.create_rectangle(cw-180, 8, cw-8, 48, fill="#f7f7f7", outline="#ccc")
+		canvas.create_line(cw-170, 20, cw-140, 20, fill="blue")
+		canvas.create_text(cw-130, 20, anchor="w", text="Atrial (mV)")
+		canvas.create_line(cw-170, 34, cw-140, 34, fill="red")
+		canvas.create_text(cw-130, 34, anchor="w", text="Ventricular (mV)")
+		btn = tk.Button(w, text="Close", command=w.destroy)
+		btn.pack(pady=(0,8))
 
 	# -----------------------
 	# Misc

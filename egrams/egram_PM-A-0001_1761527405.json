@@ -1,0 +1,1023 @@
+{
+  "device_id": "PM-A-0001",
+  "recorded_at": "2025-10-27T01:10:05Z",
+  "sampling_rate_hz": 1000,
+  "duration_ms": 199,
+  "params_snapshot": {
+    "mode": "VOO",
+    "LRL": 45,
+    "URL": 120,
+    "A_atrial_amp": 1,
+    "A_pulse_width": 1,
+    "V_ventricular_amp": 1,
+    "V_pulse_width": 1,
+    "VRP": 250,
+    "ARP": 0,
+    "A_amp": 0.0,
+    "A_pw": 0.0,
+    "V_amp": 3.5,
+    "V_pw": 0.5
+  },
+  "samples": [
+    {
+      "t_ms": 0,
+      "atrial_mV": 0.5,
+      "ventricular_mV": 0.5
+    },
+    {
+      "t_ms": 1,
+      "atrial_mV": 0.563,
+      "ventricular_mV": 0.578
+    },
+    {
+      "t_ms": 2,
+      "atrial_mV": 0.624,
+      "ventricular_mV": 0.655
+    },
+    {
+      "t_ms": 3,
+      "atrial_mV": 0.684,
+      "ventricular_mV": 0.727
+    },
+    {
+      "t_ms": 4,
+      "atrial_mV": 0.741,
+      "ventricular_mV": 0.794
+    },
+    {
+      "t_ms": 5,
+      "atrial_mV": 0.794,
+      "ventricular_mV": 0.854
+    },
+    {
+      "t_ms": 6,
+      "atrial_mV": 0.842,
+      "ventricular_mV": 0.905
+    },
+    {
+      "t_ms": 7,
+      "atrial_mV": 0.885,
+      "ventricular_mV": 0.946
+    },
+    {
+      "t_ms": 8,
+      "atrial_mV": 0.922,
+      "ventricular_mV": 0.976
+    },
+    {
+      "t_ms": 9,
+      "atrial_mV": 0.952,
+      "ventricular_mV": 0.994
+    },
+    {
+      "t_ms": 10,
+      "atrial_mV": 0.976,
+      "ventricular_mV": 1.0
+    },
+    {
+      "t_ms": 11,
+      "atrial_mV": 0.991,
+      "ventricular_mV": 0.994
+    },
+    {
+      "t_ms": 12,
+      "atrial_mV": 0.999,
+      "ventricular_mV": 0.976
+    },
+    {
+      "t_ms": 13,
+      "atrial_mV": 0.999,
+      "ventricular_mV": 0.946
+    },
+    {
+      "t_ms": 14,
+      "atrial_mV": 0.991,
+      "ventricular_mV": 0.905
+    },
+    {
+      "t_ms": 15,
+      "atrial_mV": 0.976,
+      "ventricular_mV": 0.854
+    },
+    {
+      "t_ms": 16,
+      "atrial_mV": 0.952,
+      "ventricular_mV": 0.794
+    },
+    {
+      "t_ms": 17,
+      "atrial_mV": 0.922,
+      "ventricular_mV": 0.727
+    },
+    {
+      "t_ms": 18,
+      "atrial_mV": 0.885,
+      "ventricular_mV": 0.655
+    },
+    {
+      "t_ms": 19,
+      "atrial_mV": 0.842,
+      "ventricular_mV": 0.578
+    },
+    {
+      "t_ms": 20,
+      "atrial_mV": 0.794,
+      "ventricular_mV": 0.5
+    },
+    {
+      "t_ms": 21,
+      "atrial_mV": 0.741,
+      "ventricular_mV": 0.422
+    },
+    {
+      "t_ms": 22,
+      "atrial_mV": 0.684,
+      "ventricular_mV": 0.345
+    },
+    {
+      "t_ms": 23,
+      "atrial_mV": 0.624,
+      "ventricular_mV": 0.273
+    },
+    {
+      "t_ms": 24,
+      "atrial_mV": 0.563,
+      "ventricular_mV": 0.206
+    },
+    {
+      "t_ms": 25,
+      "atrial_mV": 0.5,
+      "ventricular_mV": 0.146
+    },
+    {
+      "t_ms": 26,
+      "atrial_mV": 0.437,
+      "ventricular_mV": 0.095
+    },
+    {
+      "t_ms": 27,
+      "atrial_mV": 0.376,
+      "ventricular_mV": 0.054
+    },
+    {
+      "t_ms": 28,
+      "atrial_mV": 0.316,
+      "ventricular_mV": 0.024
+    },
+    {
+      "t_ms": 29,
+      "atrial_mV": 0.259,
+      "ventricular_mV": 0.006
+    },
+    {
+      "t_ms": 30,
+      "atrial_mV": 0.206,
+      "ventricular_mV": 0.0
+    },
+    {
+      "t_ms": 31,
+      "atrial_mV": 0.158,
+      "ventricular_mV": 0.006
+    },
+    {
+      "t_ms": 32,
+      "atrial_mV": 0.115,
+      "ventricular_mV": 0.024
+    },
+    {
+      "t_ms": 33,
+      "atrial_mV": 0.078,
+      "ventricular_mV": 0.054
+    },
+    {
+      "t_ms": 34,
+      "atrial_mV": 0.048,
+      "ventricular_mV": 0.095
+    },
+    {
+      "t_ms": 35,
+      "atrial_mV": 0.024,
+      "ventricular_mV": 0.146
+    },
+    {
+      "t_ms": 36,
+      "atrial_mV": 0.009,
+      "ventricular_mV": 0.206
+    },
+    {
+      "t_ms": 37,
+      "atrial_mV": 0.001,
+      "ventricular_mV": 0.273
+    },
+    {
+      "t_ms": 38,
+      "atrial_mV": 0.001,
+      "ventricular_mV": 0.345
+    },
+    {
+      "t_ms": 39,
+      "atrial_mV": 0.009,
+      "ventricular_mV": 0.422
+    },
+    {
+      "t_ms": 40,
+      "atrial_mV": 0.024,
+      "ventricular_mV": 0.5
+    },
+    {
+      "t_ms": 41,
+      "atrial_mV": 0.048,
+      "ventricular_mV": 0.578
+    },
+    {
+      "t_ms": 42,
+      "atrial_mV": 0.078,
+      "ventricular_mV": 0.655
+    },
+    {
+      "t_ms": 43,
+      "atrial_mV": 0.115,
+      "ventricular_mV": 0.727
+    },
+    {
+      "t_ms": 44,
+      "atrial_mV": 0.158,
+      "ventricular_mV": 0.794
+    },
+    {
+      "t_ms": 45,
+      "atrial_mV": 0.206,
+      "ventricular_mV": 0.854
+    },
+    {
+      "t_ms": 46,
+      "atrial_mV": 0.259,
+      "ventricular_mV": 0.905
+    },
+    {
+      "t_ms": 47,
+      "atrial_mV": 0.316,
+      "ventricular_mV": 0.946
+    },
+    {
+      "t_ms": 48,
+      "atrial_mV": 0.376,
+      "ventricular_mV": 0.976
+    },
+    {
+      "t_ms": 49,
+      "atrial_mV": 0.437,
+      "ventricular_mV": 0.994
+    },
+    {
+      "t_ms": 50,
+      "atrial_mV": 0.5,
+      "ventricular_mV": 1.0
+    },
+    {
+      "t_ms": 51,
+      "atrial_mV": 0.563,
+      "ventricular_mV": 0.994
+    },
+    {
+      "t_ms": 52,
+      "atrial_mV": 0.624,
+      "ventricular_mV": 0.976
+    },
+    {
+      "t_ms": 53,
+      "atrial_mV": 0.684,
+      "ventricular_mV": 0.946
+    },
+    {
+      "t_ms": 54,
+      "atrial_mV": 0.741,
+      "ventricular_mV": 0.905
+    },
+    {
+      "t_ms": 55,
+      "atrial_mV": 0.794,
+      "ventricular_mV": 0.854
+    },
+    {
+      "t_ms": 56,
+      "atrial_mV": 0.842,
+      "ventricular_mV": 0.794
+    },
+    {
+      "t_ms": 57,
+      "atrial_mV": 0.885,
+      "ventricular_mV": 0.727
+    },
+    {
+      "t_ms": 58,
+      "atrial_mV": 0.922,
+      "ventricular_mV": 0.655
+    },
+    {
+      "t_ms": 59,
+      "atrial_mV": 0.952,
+      "ventricular_mV": 0.578
+    },
+    {
+      "t_ms": 60,
+      "atrial_mV": 0.976,
+      "ventricular_mV": 0.5
+    },
+    {
+      "t_ms": 61,
+      "atrial_mV": 0.991,
+      "ventricular_mV": 0.422
+    },
+    {
+      "t_ms": 62,
+      "atrial_mV": 0.999,
+      "ventricular_mV": 0.345
+    },
+    {
+      "t_ms": 63,
+      "atrial_mV": 0.999,
+      "ventricular_mV": 0.273
+    },
+    {
+      "t_ms": 64,
+      "atrial_mV": 0.991,
+      "ventricular_mV": 0.206
+    },
+    {
+      "t_ms": 65,
+      "atrial_mV": 0.976,
+      "ventricular_mV": 0.146
+    },
+    {
+      "t_ms": 66,
+      "atrial_mV": 0.952,
+      "ventricular_mV": 0.095
+    },
+    {
+      "t_ms": 67,
+      "atrial_mV": 0.922,
+      "ventricular_mV": 0.054
+    },
+    {
+      "t_ms": 68,
+      "atrial_mV": 0.885,
+      "ventricular_mV": 0.024
+    },
+    {
+      "t_ms": 69,
+      "atrial_mV": 0.842,
+      "ventricular_mV": 0.006
+    },
+    {
+      "t_ms": 70,
+      "atrial_mV": 0.794,
+      "ventricular_mV": 0.0
+    },
+    {
+      "t_ms": 71,
+      "atrial_mV": 0.741,
+      "ventricular_mV": 0.006
+    },
+    {
+      "t_ms": 72,
+      "atrial_mV": 0.684,
+      "ventricular_mV": 0.024
+    },
+    {
+      "t_ms": 73,
+      "atrial_mV": 0.624,
+      "ventricular_mV": 0.054
+    },
+    {
+      "t_ms": 74,
+      "atrial_mV": 0.563,
+      "ventricular_mV": 0.095
+    },
+    {
+      "t_ms": 75,
+      "atrial_mV": 0.5,
+      "ventricular_mV": 0.146
+    },
+    {
+      "t_ms": 76,
+      "atrial_mV": 0.437,
+      "ventricular_mV": 0.206
+    },
+    {
+      "t_ms": 77,
+      "atrial_mV": 0.376,
+      "ventricular_mV": 0.273
+    },
+    {
+      "t_ms": 78,
+      "atrial_mV": 0.316,
+      "ventricular_mV": 0.345
+    },
+    {
+      "t_ms": 79,
+      "atrial_mV": 0.259,
+      "ventricular_mV": 0.422
+    },
+    {
+      "t_ms": 80,
+      "atrial_mV": 0.206,
+      "ventricular_mV": 0.5
+    },
+    {
+      "t_ms": 81,
+      "atrial_mV": 0.158,
+      "ventricular_mV": 0.578
+    },
+    {
+      "t_ms": 82,
+      "atrial_mV": 0.115,
+      "ventricular_mV": 0.655
+    },
+    {
+      "t_ms": 83,
+      "atrial_mV": 0.078,
+      "ventricular_mV": 0.727
+    },
+    {
+      "t_ms": 84,
+      "atrial_mV": 0.048,
+      "ventricular_mV": 0.794
+    },
+    {
+      "t_ms": 85,
+      "atrial_mV": 0.024,
+      "ventricular_mV": 0.854
+    },
+    {
+      "t_ms": 86,
+      "atrial_mV": 0.009,
+      "ventricular_mV": 0.905
+    },
+    {
+      "t_ms": 87,
+      "atrial_mV": 0.001,
+      "ventricular_mV": 0.946
+    },
+    {
+      "t_ms": 88,
+      "atrial_mV": 0.001,
+      "ventricular_mV": 0.976
+    },
+    {
+      "t_ms": 89,
+      "atrial_mV": 0.009,
+      "ventricular_mV": 0.994
+    },
+    {
+      "t_ms": 90,
+      "atrial_mV": 0.024,
+      "ventricular_mV": 1.0
+    },
+    {
+      "t_ms": 91,
+      "atrial_mV": 0.048,
+      "ventricular_mV": 0.994
+    },
+    {
+      "t_ms": 92,
+      "atrial_mV": 0.078,
+      "ventricular_mV": 0.976
+    },
+    {
+      "t_ms": 93,
+      "atrial_mV": 0.115,
+      "ventricular_mV": 0.946
+    },
+    {
+      "t_ms": 94,
+      "atrial_mV": 0.158,
+      "ventricular_mV": 0.905
+    },
+    {
+      "t_ms": 95,
+      "atrial_mV": 0.206,
+      "ventricular_mV": 0.854
+    },
+    {
+      "t_ms": 96,
+      "atrial_mV": 0.259,
+      "ventricular_mV": 0.794
+    },
+    {
+      "t_ms": 97,
+      "atrial_mV": 0.316,
+      "ventricular_mV": 0.727
+    },
+    {
+      "t_ms": 98,
+      "atrial_mV": 0.376,
+      "ventricular_mV": 0.655
+    },
+    {
+      "t_ms": 99,
+      "atrial_mV": 0.437,
+      "ventricular_mV": 0.578
+    },
+    {
+      "t_ms": 100,
+      "atrial_mV": 0.5,
+      "ventricular_mV": 0.5
+    },
+    {
+      "t_ms": 101,
+      "atrial_mV": 0.563,
+      "ventricular_mV": 0.422
+    },
+    {
+      "t_ms": 102,
+      "atrial_mV": 0.624,
+      "ventricular_mV": 0.345
+    },
+    {
+      "t_ms": 103,
+      "atrial_mV": 0.684,
+      "ventricular_mV": 0.273
+    },
+    {
+      "t_ms": 104,
+      "atrial_mV": 0.741,
+      "ventricular_mV": 0.206
+    },
+    {
+      "t_ms": 105,
+      "atrial_mV": 0.794,
+      "ventricular_mV": 0.146
+    },
+    {
+      "t_ms": 106,
+      "atrial_mV": 0.842,
+      "ventricular_mV": 0.095
+    },
+    {
+      "t_ms": 107,
+      "atrial_mV": 0.885,
+      "ventricular_mV": 0.054
+    },
+    {
+      "t_ms": 108,
+      "atrial_mV": 0.922,
+      "ventricular_mV": 0.024
+    },
+    {
+      "t_ms": 109,
+      "atrial_mV": 0.952,
+      "ventricular_mV": 0.006
+    },
+    {
+      "t_ms": 110,
+      "atrial_mV": 0.976,
+      "ventricular_mV": 0.0
+    },
+    {
+      "t_ms": 111,
+      "atrial_mV": 0.991,
+      "ventricular_mV": 0.006
+    },
+    {
+      "t_ms": 112,
+      "atrial_mV": 0.999,
+      "ventricular_mV": 0.024
+    },
+    {
+      "t_ms": 113,
+      "atrial_mV": 0.999,
+      "ventricular_mV": 0.054
+    },
+    {
+      "t_ms": 114,
+      "atrial_mV": 0.991,
+      "ventricular_mV": 0.095
+    },
+    {
+      "t_ms": 115,
+      "atrial_mV": 0.976,
+      "ventricular_mV": 0.146
+    },
+    {
+      "t_ms": 116,
+      "atrial_mV": 0.952,
+      "ventricular_mV": 0.206
+    },
+    {
+      "t_ms": 117,
+      "atrial_mV": 0.922,
+      "ventricular_mV": 0.273
+    },
+    {
+      "t_ms": 118,
+      "atrial_mV": 0.885,
+      "ventricular_mV": 0.345
+    },
+    {
+      "t_ms": 119,
+      "atrial_mV": 0.842,
+      "ventricular_mV": 0.422
+    },
+    {
+      "t_ms": 120,
+      "atrial_mV": 0.794,
+      "ventricular_mV": 0.5
+    },
+    {
+      "t_ms": 121,
+      "atrial_mV": 0.741,
+      "ventricular_mV": 0.578
+    },
+    {
+      "t_ms": 122,
+      "atrial_mV": 0.684,
+      "ventricular_mV": 0.655
+    },
+    {
+      "t_ms": 123,
+      "atrial_mV": 0.624,
+      "ventricular_mV": 0.727
+    },
+    {
+      "t_ms": 124,
+      "atrial_mV": 0.563,
+      "ventricular_mV": 0.794
+    },
+    {
+      "t_ms": 125,
+      "atrial_mV": 0.5,
+      "ventricular_mV": 0.854
+    },
+    {
+      "t_ms": 126,
+      "atrial_mV": 0.437,
+      "ventricular_mV": 0.905
+    },
+    {
+      "t_ms": 127,
+      "atrial_mV": 0.376,
+      "ventricular_mV": 0.946
+    },
+    {
+      "t_ms": 128,
+      "atrial_mV": 0.316,
+      "ventricular_mV": 0.976
+    },
+    {
+      "t_ms": 129,
+      "atrial_mV": 0.259,
+      "ventricular_mV": 0.994
+    },
+    {
+      "t_ms": 130,
+      "atrial_mV": 0.206,
+      "ventricular_mV": 1.0
+    },
+    {
+      "t_ms": 131,
+      "atrial_mV": 0.158,
+      "ventricular_mV": 0.994
+    },
+    {
+      "t_ms": 132,
+      "atrial_mV": 0.115,
+      "ventricular_mV": 0.976
+    },
+    {
+      "t_ms": 133,
+      "atrial_mV": 0.078,
+      "ventricular_mV": 0.946
+    },
+    {
+      "t_ms": 134,
+      "atrial_mV": 0.048,
+      "ventricular_mV": 0.905
+    },
+    {
+      "t_ms": 135,
+      "atrial_mV": 0.024,
+      "ventricular_mV": 0.854
+    },
+    {
+      "t_ms": 136,
+      "atrial_mV": 0.009,
+      "ventricular_mV": 0.794
+    },
+    {
+      "t_ms": 137,
+      "atrial_mV": 0.001,
+      "ventricular_mV": 0.727
+    },
+    {
+      "t_ms": 138,
+      "atrial_mV": 0.001,
+      "ventricular_mV": 0.655
+    },
+    {
+      "t_ms": 139,
+      "atrial_mV": 0.009,
+      "ventricular_mV": 0.578
+    },
+    {
+      "t_ms": 140,
+      "atrial_mV": 0.024,
+      "ventricular_mV": 0.5
+    },
+    {
+      "t_ms": 141,
+      "atrial_mV": 0.048,
+      "ventricular_mV": 0.422
+    },
+    {
+      "t_ms": 142,
+      "atrial_mV": 0.078,
+      "ventricular_mV": 0.345
+    },
+    {
+      "t_ms": 143,
+      "atrial_mV": 0.115,
+      "ventricular_mV": 0.273
+    },
+    {
+      "t_ms": 144,
+      "atrial_mV": 0.158,
+      "ventricular_mV": 0.206
+    },
+    {
+      "t_ms": 145,
+      "atrial_mV": 0.206,
+      "ventricular_mV": 0.146
+    },
+    {
+      "t_ms": 146,
+      "atrial_mV": 0.259,
+      "ventricular_mV": 0.095
+    },
+    {
+      "t_ms": 147,
+      "atrial_mV": 0.316,
+      "ventricular_mV": 0.054
+    },
+    {
+      "t_ms": 148,
+      "atrial_mV": 0.376,
+      "ventricular_mV": 0.024
+    },
+    {
+      "t_ms": 149,
+      "atrial_mV": 0.437,
+      "ventricular_mV": 0.006
+    },
+    {
+      "t_ms": 150,
+      "atrial_mV": 0.5,
+      "ventricular_mV": 0.0
+    },
+    {
+      "t_ms": 151,
+      "atrial_mV": 0.563,
+      "ventricular_mV": 0.006
+    },
+    {
+      "t_ms": 152,
+      "atrial_mV": 0.624,
+      "ventricular_mV": 0.024
+    },
+    {
+      "t_ms": 153,
+      "atrial_mV": 0.684,
+      "ventricular_mV": 0.054
+    },
+    {
+      "t_ms": 154,
+      "atrial_mV": 0.741,
+      "ventricular_mV": 0.095
+    },
+    {
+      "t_ms": 155,
+      "atrial_mV": 0.794,
+      "ventricular_mV": 0.146
+    },
+    {
+      "t_ms": 156,
+      "atrial_mV": 0.842,
+      "ventricular_mV": 0.206
+    },
+    {
+      "t_ms": 157,
+      "atrial_mV": 0.885,
+      "ventricular_mV": 0.273
+    },
+    {
+      "t_ms": 158,
+      "atrial_mV": 0.922,
+      "ventricular_mV": 0.345
+    },
+    {
+      "t_ms": 159,
+      "atrial_mV": 0.952,
+      "ventricular_mV": 0.422
+    },
+    {
+      "t_ms": 160,
+      "atrial_mV": 0.976,
+      "ventricular_mV": 0.5
+    },
+    {
+      "t_ms": 161,
+      "atrial_mV": 0.991,
+      "ventricular_mV": 0.578
+    },
+    {
+      "t_ms": 162,
+      "atrial_mV": 0.999,
+      "ventricular_mV": 0.655
+    },
+    {
+      "t_ms": 163,
+      "atrial_mV": 0.999,
+      "ventricular_mV": 0.727
+    },
+    {
+      "t_ms": 164,
+      "atrial_mV": 0.991,
+      "ventricular_mV": 0.794
+    },
+    {
+      "t_ms": 165,
+      "atrial_mV": 0.976,
+      "ventricular_mV": 0.854
+    },
+    {
+      "t_ms": 166,
+      "atrial_mV": 0.952,
+      "ventricular_mV": 0.905
+    },
+    {
+      "t_ms": 167,
+      "atrial_mV": 0.922,
+      "ventricular_mV": 0.946
+    },
+    {
+      "t_ms": 168,
+      "atrial_mV": 0.885,
+      "ventricular_mV": 0.976
+    },
+    {
+      "t_ms": 169,
+      "atrial_mV": 0.842,
+      "ventricular_mV": 0.994
+    },
+    {
+      "t_ms": 170,
+      "atrial_mV": 0.794,
+      "ventricular_mV": 1.0
+    },
+    {
+      "t_ms": 171,
+      "atrial_mV": 0.741,
+      "ventricular_mV": 0.994
+    },
+    {
+      "t_ms": 172,
+      "atrial_mV": 0.684,
+      "ventricular_mV": 0.976
+    },
+    {
+      "t_ms": 173,
+      "atrial_mV": 0.624,
+      "ventricular_mV": 0.946
+    },
+    {
+      "t_ms": 174,
+      "atrial_mV": 0.563,
+      "ventricular_mV": 0.905
+    },
+    {
+      "t_ms": 175,
+      "atrial_mV": 0.5,
+      "ventricular_mV": 0.854
+    },
+    {
+      "t_ms": 176,
+      "atrial_mV": 0.437,
+      "ventricular_mV": 0.794
+    },
+    {
+      "t_ms": 177,
+      "atrial_mV": 0.376,
+      "ventricular_mV": 0.727
+    },
+    {
+      "t_ms": 178,
+      "atrial_mV": 0.316,
+      "ventricular_mV": 0.655
+    },
+    {
+      "t_ms": 179,
+      "atrial_mV": 0.259,
+      "ventricular_mV": 0.578
+    },
+    {
+      "t_ms": 180,
+      "atrial_mV": 0.206,
+      "ventricular_mV": 0.5
+    },
+    {
+      "t_ms": 181,
+      "atrial_mV": 0.158,
+      "ventricular_mV": 0.422
+    },
+    {
+      "t_ms": 182,
+      "atrial_mV": 0.115,
+      "ventricular_mV": 0.345
+    },
+    {
+      "t_ms": 183,
+      "atrial_mV": 0.078,
+      "ventricular_mV": 0.273
+    },
+    {
+      "t_ms": 184,
+      "atrial_mV": 0.048,
+      "ventricular_mV": 0.206
+    },
+    {
+      "t_ms": 185,
+      "atrial_mV": 0.024,
+      "ventricular_mV": 0.146
+    },
+    {
+      "t_ms": 186,
+      "atrial_mV": 0.009,
+      "ventricular_mV": 0.095
+    },
+    {
+      "t_ms": 187,
+      "atrial_mV": 0.001,
+      "ventricular_mV": 0.054
+    },
+    {
+      "t_ms": 188,
+      "atrial_mV": 0.001,
+      "ventricular_mV": 0.024
+    },
+    {
+      "t_ms": 189,
+      "atrial_mV": 0.009,
+      "ventricular_mV": 0.006
+    },
+    {
+      "t_ms": 190,
+      "atrial_mV": 0.024,
+      "ventricular_mV": 0.0
+    },
+    {
+      "t_ms": 191,
+      "atrial_mV": 0.048,
+      "ventricular_mV": 0.006
+    },
+    {
+      "t_ms": 192,
+      "atrial_mV": 0.078,
+      "ventricular_mV": 0.024
+    },
+    {
+      "t_ms": 193,
+      "atrial_mV": 0.115,
+      "ventricular_mV": 0.054
+    },
+    {
+      "t_ms": 194,
+      "atrial_mV": 0.158,
+      "ventricular_mV": 0.095
+    },
+    {
+      "t_ms": 195,
+      "atrial_mV": 0.206,
+      "ventricular_mV": 0.146
+    },
+    {
+      "t_ms": 196,
+      "atrial_mV": 0.259,
+      "ventricular_mV": 0.206
+    },
+    {
+      "t_ms": 197,
+      "atrial_mV": 0.316,
+      "ventricular_mV": 0.273
+    },
+    {
+      "t_ms": 198,
+      "atrial_mV": 0.376,
+      "ventricular_mV": 0.345
+    },
+    {
+      "t_ms": 199,
+      "atrial_mV": 0.437,
+      "ventricular_mV": 0.422
+    }
+  ]
+}
