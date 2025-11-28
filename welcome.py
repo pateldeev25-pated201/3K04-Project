@@ -812,6 +812,9 @@ class WelcomeApp(tk.Tk):
 			self.serial_btn.config(state="disabled")
 			self.serial_disc_btn.config(state="normal")
 			self._append_log(f"Serial connected on {port}")
+			# Ensure device file is loaded and parameter editor is shown
+			if self.device_var.get() != "(none)":
+				self._on_device_selected()
 		except Exception as e:
 			self.serial = None
 			self.serial_connected = False
