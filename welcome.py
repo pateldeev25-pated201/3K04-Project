@@ -810,8 +810,12 @@ class WelcomeApp(tk.Tk):
 			self.serial_disc_btn.config(state="normal")
 			self._append_log(f"Serial connected on {port}")
 		except Exception as e:
-			self._append_log(f"Serial connect error: {e}")
-			messagebox.showerror("Serial Error", f"Could not open serial port: {e}")
+			self.serial = None
+			self.serial_connected = False
+			self.serial_port = None
+			self.status_label.config(text="Serial Connect Failed", bg="orange")
+			self._append_log(f"Warning: Could not connect to serial port: {e}")
+			messagebox.showwarning("Serial Warning", f"Could not connect to serial port: {e}")
 
 	def _disconnect_serial(self):
 		if self.serial:
