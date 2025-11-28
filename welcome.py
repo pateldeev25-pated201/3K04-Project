@@ -32,7 +32,6 @@ REQUIRED_PARAMS = [
 	("Maximum Sensor Rate", "MSR", "bpm"),
 	("Fixed AV Delay", "Fixed_AV_Delay", "ms"),
 	("Dynamic AV Delay", "Dynamic_AV_Delay", "On/Off"),
-	("Minimum Dynamic AV Delay", "Min_Dyn_AV_Delay", "ms"),
 	("Sensed AV Delay Offset", "Sensed_AV_Delay_Offset", "ms"),
 	("Atrial Amplitude", "A_atrial_amp", "V"),
 	("Ventricular Amplitude", "V_ventricular_amp", "V"),
@@ -45,7 +44,6 @@ REQUIRED_PARAMS = [
 	("PVARP", "PVARP", "ms"),
 	("PVARP Extension", "PVARP_Extension", "ms"),
 	("Hysteresis", "Hysteresis", "On/Off"),
-	("Hysteresis Rate Limit", "HRL", "bpm"),
 	("Rate Smoothing", "Rate_Smoothing", "%"),
 	("ATR Duration", "ATR_Duration", "cycles"),
 	("ATR Fallback Mode", "ATR_Fallback_Mode", "Mode"),
@@ -68,14 +66,14 @@ PARAMS_BY_MODE = {
 	"vvir": {"LRL", "URL", "MSR", "V_ventricular_amp", "V_pulse_width", "VRP", "V_sensitivity", "Hysteresis", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time"},
 	"aat": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "ARP", "A_sensitivity"},
 	"vvt": {"LRL", "URL", "V_ventricular_amp", "V_pulse_width", "VRP", "V_sensitivity"},
-	"doo": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension"},
-	"ddd": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension", "A_sensitivity", "V_sensitivity", "Rate_Smoothing", "ATR_Duration", "ATR_Fallback_Mode", "ATR_Fallback_Time", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time", "Hysteresis", "HRL"},
-	"ddi": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension"},
-	"vdd": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "PVARP", "PVARP_Extension"},
-	"dddr": {"LRL", "URL", "MSR", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension", "A_sensitivity", "V_sensitivity", "Rate_Smoothing", "ATR_Duration", "ATR_Fallback_Mode", "ATR_Fallback_Time", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time", "Hysteresis", "HRL"},
-	"vddr": {"LRL", "URL", "MSR", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "PVARP", "PVARP_Extension", "A_sensitivity", "V_sensitivity", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time", "Hysteresis", "HRL"},
-	"door": {"LRL", "URL", "MSR", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension", "A_sensitivity", "V_sensitivity", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time", "Hysteresis", "HRL"},
-	"ddir": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension"},
+	"doo": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time"},
+	"ddd": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension", "A_sensitivity", "V_sensitivity", "Rate_Smoothing", "ATR_Duration", "ATR_Fallback_Mode", "ATR_Fallback_Time", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time", "Hysteresis"},
+	"ddi": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension"},
+	"vdd": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "PVARP", "PVARP_Extension"},
+	"dddr": {"LRL", "URL", "MSR", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension", "A_sensitivity", "V_sensitivity", "Rate_Smoothing", "ATR_Duration", "ATR_Fallback_Mode", "ATR_Fallback_Time", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time", "Hysteresis"},
+	"vddr": {"LRL", "URL", "MSR", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "PVARP", "PVARP_Extension", "A_sensitivity", "V_sensitivity", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time", "Hysteresis"},
+	"door": {"LRL", "URL", "MSR", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension", "A_sensitivity", "V_sensitivity", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time", "Hysteresis"},
+	"ddir": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time"},
 }
 
 # Expanded numeric ranges (update as needed per your requirements doc)
@@ -1062,50 +1060,67 @@ class WelcomeApp(tk.Tk):
 		self._clear_params_view()
 		row = 0
 		matched_keys = set()
-		# Mode first (if present) — show as dropdown
-		mode_key = _find_matching_key(params, ["mode"]) if isinstance(params, dict) else None
+		# Mode first (if present) — show as dropdown in its own row
+		# Always show mode selector as dropdown at top, labeled 'Mode:'
 		mode_val = ""
-		if mode_key:
-			mode_val = params.get(mode_key, "")
-		# render mode row
-		if mode_key is not None:
-			k = "mode"
-			v = mode_val
-			matched_keys.add(mode_key)
-			tk.Label(self.params_frame, text=f"{k}:").grid(row=row, column=0, sticky="e", padx=(0,6), pady=2)
-			var = tk.StringVar(value=str(v))
-			options = list(MODE_OPTIONS)
-			if str(v) not in options and str(v) != "":
-				options.insert(0, str(v))
-			opt = tk.OptionMenu(self.params_frame, var, *options)
-			opt.config(width=10)
-			opt.grid(row=row, column=1, pady=2)
-			self.param_vars["mode"] = var
-			self.param_entries["mode"] = opt
-			row += 1
-			# attach a trace so mode changes apply constraints
-			try:
-				var.trace_add("write", lambda *a: self._on_mode_changed())
-			except Exception:
-				# older tkinter may use trace
-				var.trace("w", lambda *a: self._on_mode_changed())
+		if isinstance(params, dict):
+			mode_val = params.get("mode", "")
+		# Mode selector in first column, row 0
+		tk.Label(self.params_frame, text="Mode:").grid(row=0, column=0, sticky="e", padx=(0,6), pady=2)
+		var = tk.StringVar(value=str(mode_val))
+		options = list(MODE_OPTIONS)
+		if str(mode_val) not in options and str(mode_val) != "":
+			options.insert(0, str(mode_val))
+		opt = tk.OptionMenu(self.params_frame, var, *options)
+		opt.config(width=10)
+		opt.grid(row=0, column=1, pady=2, sticky="w")
+		self.param_vars["mode"] = var
+		self.param_entries["mode"] = opt
+		try:
+			var.trace_add("write", lambda *a: self._on_mode_changed())
+		except Exception:
+			var.trace("w", lambda *a: self._on_mode_changed())
 		# Render required params in order
-		# Display required params in two columns
-		col_count = 2
-		param_count = len(REQUIRED_PARAMS)
-		for idx, (display, canon, unit) in enumerate(REQUIRED_PARAMS):
+		# Display required params in three columns, starting at row 1 (below mode selector)
+		col_count = 3
+		amp_pw_canons = ["A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width"]
+		amp_pw_params = [p for p in REQUIRED_PARAMS if p[1] in amp_pw_canons]
+		other_params = [p for p in REQUIRED_PARAMS if p[1] not in amp_pw_canons]
+
+		# Render all other params in grid
+		idx = 0
+		for param in other_params:
+			display, canon, unit = param
+			col = idx % col_count
+			row_offset = 1 + (idx // col_count)
 			found = _find_matching_key(params, [display, canon, display.replace(" ", "")])
 			val = ""
 			if found:
 				val = params.get(found, "")
 				matched_keys.add(found)
 			label_text = f"{display} ({unit}):"
-			col = idx % col_count
-			row_offset = idx // col_count
 			tk.Label(self.params_frame, text=label_text).grid(row=row_offset, column=col*2, sticky="e", padx=(0,6), pady=2)
 			var = tk.StringVar(value=str(val))
 			ent = tk.Entry(self.params_frame, textvariable=var, width=12)
 			ent.grid(row=row_offset, column=col*2+1, pady=2)
+			self.param_vars[canon] = var
+			self.param_entries[canon] = ent
+			idx += 1
+
+		# Now render the four amp/pw params at the very bottom, each in their own row
+		last_row = 1 + (len(other_params) // col_count)
+		for i, param in enumerate(amp_pw_params):
+			display, canon, unit = param
+			found = _find_matching_key(params, [display, canon, display.replace(" ", "")])
+			val = ""
+			if found:
+				val = params.get(found, "")
+				matched_keys.add(found)
+			label_text = f"{display} ({unit}):"
+			tk.Label(self.params_frame, text=label_text).grid(row=last_row + i, column=0, sticky="e", padx=(0,6), pady=2)
+			var = tk.StringVar(value=str(val))
+			ent = tk.Entry(self.params_frame, textvariable=var, width=12)
+			ent.grid(row=last_row + i, column=1, pady=2)
 			self.param_vars[canon] = var
 			self.param_entries[canon] = ent
 		# Render any remaining keys present in params
