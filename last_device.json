@@ -1,20 +1,20 @@
 {
-  "device_id": "PM-A-0001",
+  "device_id": "PM-B-9999",
   "model": "",
   "params_snapshot": {
-    "mode": "AOO",
-    "LRL": 30,
-    "URL": 120,
-    "A_atrial_amp": 1,
-    "A_pulse_width": 1,
-    "V_ventricular_amp": 1,
-    "V_pulse_width": 1,
-    "VRP": 250,
-    "ARP": 200,
-    "A_amp": 0.0,
-    "A_pw": 0.0,
-    "V_amp": 3.5,
-    "V_pw": 0.5
+    "mode": "DDIR",
+    "LRL": 170,
+    "URL": 175,
+    "A_atrial_amp": 7.5,
+    "A_pulse_width": 2,
+    "V_ventricular_amp": 7.5,
+    "V_pulse_width": 2,
+    "VRP": 500,
+    "ARP": 500,
+    "A_amp": 100000,
+    "A_pw": 100000,
+    "V_amp": 100000,
+    "V_pw": 100000
   },
-  "last_seen": "2025-10-27T01:35:46Z"
+  "last_seen": "2025-10-31T20:37:52Z"
 }

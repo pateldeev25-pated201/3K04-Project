@@ -8,5 +8,15 @@
     "username": "Dylan",
     "salt": "02ff40e215c1c60e4b8f142dc2528f7b",
     "pw_hash": "e8c83a9d4f5183650670d6d08ecf3983b895e1e1108a07003da10908c3eedbd1"
+  },
+  {
+    "username": "123",
+    "salt": "80dd46c4ec25d436cf07f088e17f4c6d",
+    "pw_hash": "10488fc7fbad89c1c8dd5093e22cc6fb47841edcd2be8d8401b086d63a98a54e"
+  },
+  {
+    "username": "pedro",
+    "salt": "3bc6af3dc4ad4a2ac8c670584fe3635b",
+    "pw_hash": "4affb5448d4ce69c66081070c075003657d4bf63c57ac9796dc822c0dd20ee58"
   }
 ]

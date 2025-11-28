@@ -1,5 +1,6 @@
+
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, simpledialog
 import json
 import os
 import hashlib
@@ -8,10 +9,14 @@ import time
 import glob
 from typing import Optional
 
+# Import serial communication module
+import dcm_comm
+
 # -----------------------
 # Files / config
 # -----------------------
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
 USERS_FILE = os.path.join(BASE_DIR, "users.json")
 LAST_DEVICE_FILE = os.path.join(BASE_DIR, "last_device.json")
 EGRAM_DIR = os.path.join(BASE_DIR, "egrams")
@@ -21,44 +26,118 @@ MAX_USERS = 10
 # Modes for dropdown
 MODE_OPTIONS = ["AOO", "VOO", "AAI", "VVI", "DOO", "DDD", "DDI", "VDD", "AOOR", "VOOR", "AAIR", "VVIR", "DDDR", "AAT", "VVT", "VDDR", "DOOR", "DDIR"]
 
-# Required parameters (display label, canonical key, unit)
+# Expanded required parameters (display label, canonical key, unit)
 REQUIRED_PARAMS = [
 	("Lower Rate Limit", "LRL", "bpm"),
 	("Upper Rate Limit", "URL", "bpm"),
+	("Maximum Sensor Rate", "MSR", "bpm"),
+	("Fixed AV Delay", "Fixed_AV_Delay", "ms"),
+	("Dynamic AV Delay", "Dynamic_AV_Delay", "On/Off"),
+	("Minimum Dynamic AV Delay", "Min_Dyn_AV_Delay", "ms"),
+	("Sensed AV Delay Offset", "Sensed_AV_Delay_Offset", "ms"),
 	("Atrial Amplitude", "A_atrial_amp", "V"),
-	("Atrial Pulse Width", "A_pulse_width", "ms"),
 	("Ventricular Amplitude", "V_ventricular_amp", "V"),
+	("Atrial Pulse Width", "A_pulse_width", "ms"),
 	("Ventricular Pulse Width", "V_pulse_width", "ms"),
+	("Atrial Sensitivity", "A_sensitivity", "mV"),
+	("Ventricular Sensitivity", "V_sensitivity", "mV"),
 	("VRP", "VRP", "ms"),
 	("ARP", "ARP", "ms"),
+	("PVARP", "PVARP", "ms"),
+	("PVARP Extension", "PVARP_Extension", "ms"),
+	("Hysteresis", "Hysteresis", "On/Off"),
+	("Hysteresis Rate Limit", "HRL", "bpm"),
+	("Rate Smoothing", "Rate_Smoothing", "%"),
+	("ATR Duration", "ATR_Duration", "cycles"),
+	("ATR Fallback Mode", "ATR_Fallback_Mode", "Mode"),
+	("ATR Fallback Time", "ATR_Fallback_Time", "min"),
+	("Activity Threshold", "Activity_Threshold", "Level"),
+	("Reaction Time", "Reaction_Time", "sec"),
+	("Response Factor", "Response_Factor", ""),
+	("Recovery Time", "Recovery_Time", "min"),
 ]
 
-# Map which canonical params are programmable per mode (approximate mapping from Table 6)
+# Expanded PARAMS_BY_MODE (from Table 6)
 PARAMS_BY_MODE = {
-	# Per Table 6 (programmatic mapping for the 8 required params)
-	# Lower Rate Limit and Upper Rate Limit are programmable in essentially all pacing modes
-	# Atrial-specific parameters enabled for atrial-only and dual modes; ventricular-specific for ventricular-only and dual modes
-	# We use normalized mode keys (lowercase) for lookup in _mode_allowed_params
-	"aoo": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "ARP"},
-	"aai": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "ARP"},
-	"aoor": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "ARP"},
-	"aair": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "ARP"},
-	"aat": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "ARP"},
+	"aoo": {"LRL", "URL", "A_atrial_amp", "A_pulse_width"},
+	"voo": {"LRL", "URL", "V_ventricular_amp", "V_pulse_width"},
+	"aai": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "ARP", "A_sensitivity", "Hysteresis"},
+	"vvi": {"LRL", "URL", "V_ventricular_amp", "V_pulse_width", "VRP", "V_sensitivity", "Hysteresis"},
+	"aoor": {"LRL", "URL", "MSR", "A_atrial_amp", "A_pulse_width", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time"},
+	"voor": {"LRL", "URL", "MSR", "V_ventricular_amp", "V_pulse_width", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time"},
+	"aair": {"LRL", "URL", "MSR", "A_atrial_amp", "A_pulse_width", "ARP", "A_sensitivity", "Hysteresis", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time"},
+	"vvir": {"LRL", "URL", "MSR", "V_ventricular_amp", "V_pulse_width", "VRP", "V_sensitivity", "Hysteresis", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time"},
+	"aat": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "ARP", "A_sensitivity"},
+	"vvt": {"LRL", "URL", "V_ventricular_amp", "V_pulse_width", "VRP", "V_sensitivity"},
+	"doo": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension"},
+	"ddd": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension", "A_sensitivity", "V_sensitivity", "Rate_Smoothing", "ATR_Duration", "ATR_Fallback_Mode", "ATR_Fallback_Time", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time", "Hysteresis", "HRL"},
+	"ddi": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension"},
+	"vdd": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "PVARP", "PVARP_Extension"},
+	"dddr": {"LRL", "URL", "MSR", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension", "A_sensitivity", "V_sensitivity", "Rate_Smoothing", "ATR_Duration", "ATR_Fallback_Mode", "ATR_Fallback_Time", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time", "Hysteresis", "HRL"},
+	"vddr": {"LRL", "URL", "MSR", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "PVARP", "PVARP_Extension", "A_sensitivity", "V_sensitivity", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time", "Hysteresis", "HRL"},
+	"door": {"LRL", "URL", "MSR", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension", "A_sensitivity", "V_sensitivity", "Activity_Threshold", "Reaction_Time", "Response_Factor", "Recovery_Time", "Hysteresis", "HRL"},
+	"ddir": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "Fixed_AV_Delay", "Dynamic_AV_Delay", "Min_Dyn_AV_Delay", "Sensed_AV_Delay_Offset", "VRP", "ARP", "PVARP", "PVARP_Extension"},
+}
 
-	"voo": {"LRL", "URL", "V_ventricular_amp", "V_pulse_width", "VRP"},
-	"vvi": {"LRL", "URL", "V_ventricular_amp", "V_pulse_width", "VRP"},
-	"voor": {"LRL", "URL", "V_ventricular_amp", "V_pulse_width", "VRP"},
-	"vvir": {"LRL", "URL", "V_ventricular_amp", "V_pulse_width", "VRP"},
-	"vvt": {"LRL", "URL", "V_ventricular_amp", "V_pulse_width", "VRP"},
+# Expanded numeric ranges (update as needed per your requirements doc)
+PARAM_RANGES = {
+	"LRL": (30, 175),
+	"URL": (50, 175),
+	"MSR": (50, 175),
+	"Fixed_AV_Delay": (70, 300),
+	"Dynamic_AV_Delay": (0, 1),  # 0=Off, 1=On
+	"Min_Dyn_AV_Delay": (30, 100),
+	"Sensed_AV_Delay_Offset": (-100, 0),
+	"A_atrial_amp": (0.1, 5.0),
+	"V_ventricular_amp": (0.1, 5.0),
+	"A_pulse_width": (1, 30),
+	"V_pulse_width": (1, 30),
+	"A_sensitivity": (0.25, 10),
+	"V_sensitivity": (0.25, 10),
+	"VRP": (150, 500),
+	"ARP": (150, 500),
+	"PVARP": (150, 500),
+	"PVARP_Extension": (0, 400),
+	"Hysteresis": (0, 1),  # 0=Off, 1=On
+	"HRL": (30, 175),
+	"Rate_Smoothing": (0, 25),
+	"ATR_Duration": (10, 2000),
+	"ATR_Fallback_Mode": (0, 1),  # 0=Off, 1=On or use string if needed
+	"ATR_Fallback_Time": (1, 5),
+	"Activity_Threshold": (1, 7),  # e.g., 1=V-Low, 7=V-High
+	"Reaction_Time": (10, 50),
+	"Response_Factor": (1, 16),
+	"Recovery_Time": (2, 16),
+}
 
-	"doo": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
-	"ddd": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
-	"ddi": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
-	"vdd": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
-	"dddr": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
-	"vddr": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
-	"door": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
-	"ddir": {"LRL", "URL", "A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width", "VRP", "ARP"},
+DEFAULT_VALUES = {
+	"LRL": 60,
+	"URL": 120,
+	"MSR": 120,
+	"Fixed_AV_Delay": 150,
+	"Dynamic_AV_Delay": 0,
+	"Min_Dyn_AV_Delay": 50,
+	"Sensed_AV_Delay_Offset": 0,
+	"A_atrial_amp": 2.5,
+	"V_ventricular_amp": 2.5,
+	"A_pulse_width": 1,
+	"V_pulse_width": 1,
+	"A_sensitivity": 0.75,
+	"V_sensitivity": 2.5,
+	"VRP": 320,
+	"ARP": 250,
+	"PVARP": 250,
+	"PVARP_Extension": 0,
+	"Hysteresis": 0,
+	"HRL": 50,
+	"Rate_Smoothing": 0,
+	"ATR_Duration": 20,
+	"ATR_Fallback_Mode": 0,
+	"ATR_Fallback_Time": 1,
+	"Activity_Threshold": 4,
+	"Reaction_Time": 30,
+	"Response_Factor": 8,
+	"Recovery_Time": 5,
 }
 
 # Numeric ranges for required parameters (assumptions -- adjust if you have official ranges):
@@ -383,12 +462,18 @@ def _clamp_to_range(name: str, value) -> tuple[bool, str]:
 # Main Application (login + DCM UI)
 # -----------------------
 class WelcomeApp(tk.Tk):
+
 	def __init__(self):
 		super().__init__()
 		self.title("DCM — Login / DCM UI")
 		self.resizable(False, False)
 		self.users = load_users()
 		self.device_mgr = DeviceManager()
+
+		# Serial comm state
+		self.serial = None  # dcm_comm.DCMComm instance
+		self.serial_port = None
+		self.serial_connected = False
 
 		# Frames
 		self.frame_welcome = tk.Frame(self)
@@ -496,13 +581,13 @@ class WelcomeApp(tk.Tk):
 	# -----------------------
 	# DCM UI build
 	# -----------------------
+
 	def _build_dcm(self):
 		f = self.frame_dcm
 
 		# Top: user + logout
 		top = tk.Frame(f); top.pack(fill="x", pady=(0,8))
 		self.logged_label = tk.Label(top, text=""); self.logged_label.pack(side="left")
-		# Logout button stays in the top bar; Disconnect moved to the left panel.
 		tk.Button(top, text="Logout", command=self._dcm_logout).pack(side="right")
 
 		# Left: connection / status / device select
@@ -513,6 +598,16 @@ class WelcomeApp(tk.Tk):
 		self.status_label = tk.Label(left, text="Disconnected", bg="lightgray", width=18)
 		self.status_label.pack(pady=(4,8))
 
+		# Serial port controls
+		tk.Label(left, text="Serial Port:").pack(pady=(2,0))
+		self.serial_port_var = tk.StringVar(value="COM3")  # Default port, update as needed
+		self.serial_entry = tk.Entry(left, textvariable=self.serial_port_var, width=16)
+		self.serial_entry.pack(pady=(0,2))
+		self.serial_btn = tk.Button(left, text="Connect Serial", width=18, command=self._connect_serial)
+		self.serial_btn.pack(pady=(2,2))
+		self.serial_disc_btn = tk.Button(left, text="Disconnect Serial", width=18, command=self._disconnect_serial, state="disabled")
+		self.serial_disc_btn.pack(pady=(0,8))
+
 		# Device selector dropdown
 		tk.Label(left, text="Choose device file:").pack(pady=(6,2))
 		self.device_var = tk.StringVar(value="(none)")
@@ -520,7 +615,6 @@ class WelcomeApp(tk.Tk):
 		self.device_menu.config(width=22)
 		self.device_menu.pack()
 		tk.Button(left, text="Refresh Device List", width=18, command=self._refresh_device_list).pack(pady=(6,2))
-		# Disconnect placed under the device selector as requested
 		tk.Button(left, text="Disconnect", width=18, command=self._dcm_disconnect).pack(pady=(6,2))
 
 		# Middle: parameter viewer / editor
@@ -535,26 +629,161 @@ class WelcomeApp(tk.Tk):
 		self.param_vars = {}
 		self.param_entries = {}
 
+
 		btns = tk.Frame(mid); btns.pack(pady=6)
 		tk.Button(btns, text="Save to File", command=self._save_params_to_file).pack(side="left", padx=6)
 		tk.Button(btns, text="Show Last Device Info", command=self._show_last_device_info).pack(side="left")
+		# Serial comm actions
+		tk.Button(btns, text="Send Params to Device", command=self._send_params_to_device).pack(side="left", padx=6)
+		tk.Button(btns, text="Verify Parameters", command=self._verify_params_on_device).pack(side="left", padx=6)
+		tk.Button(btns, text="Request Egram", command=self._request_egram).pack(side="left", padx=6)
+		tk.Button(btns, text="Start Live Egram", command=self._start_live_egram).pack(side="left", padx=6)
+		tk.Button(btns, text="Stop Egram", command=self._stop_egram).pack(side="left", padx=6)
+
+		# Live egram canvas (hidden by default)
+		self.live_egram_win = None
+		self._live_egram_running = False
+	def _verify_params_on_device(self):
+		if not self.serial_connected or not self.serial:
+			self._append_log("Serial not connected")
+			messagebox.showwarning("Serial", "Serial port not connected")
+			return
+		try:
+			self.serial.send_packet(dcm_comm.get_fn_codes()['k_pparams'])
+			pkt = self.serial.read_packet()
+			if not pkt:
+				self._append_log("No response from device for parameter verification")
+				messagebox.showerror("Verify", "No response from device.")
+				return
+			dev_params = dcm_comm.unpack_params(pkt[4:-1])
+			gui_params = self._gather_ui_params()
+			mismatches = []
+			for k in dev_params:
+				v_dev = dev_params[k]
+				v_gui = gui_params.get(k)
+				# Allow small float tolerance
+				if isinstance(v_dev, float) and isinstance(v_gui, float):
+					if abs(v_dev - v_gui) > 0.01:
+						mismatches.append(f"{k}: device={v_dev}, gui={v_gui}")
+				else:
+					if str(v_dev) != str(v_gui):
+						mismatches.append(f"{k}: device={v_dev}, gui={v_gui}")
+			if not mismatches:
+				messagebox.showinfo("Verify", "Parameters match device.")
+				self._append_log("Parameter verification: MATCH")
+			else:
+				messagebox.showwarning("Verify", "Mismatch:\n" + "\n".join(mismatches))
+				self._append_log("Parameter verification: MISMATCH\n" + "\n".join(mismatches))
+		except Exception as e:
+			self._append_log(f"Verify params error: {e}")
+			messagebox.showerror("Verify Error", f"Failed to verify parameters: {e}")
+
+	def _start_live_egram(self):
+		if not self.serial_connected or not self.serial:
+			self._append_log("Serial not connected")
+			messagebox.showwarning("Serial", "Serial port not connected")
+			return
+		if self._live_egram_running:
+			return
+		self._live_egram_running = True
+		self._append_log("Starting live egram display")
+		self.serial.request_egram()
+		self._open_live_egram_window()
+		self.after(100, self._poll_live_egram)
+
+	def _stop_live_egram(self):
+		self._live_egram_running = False
+		if self.serial_connected and self.serial:
+			try:
+				self.serial.stop_egram()
+			except Exception:
+				pass
+		if self.live_egram_win:
+			self.live_egram_win.destroy()
+			self.live_egram_win = None
+		self._append_log("Stopped live egram display")
+
+	def _open_live_egram_window(self):
+		if self.live_egram_win:
+			return
+		self.live_egram_win = tk.Toplevel(self)
+		self.live_egram_win.title("Live Egram Display")
+		self.live_egram_canvas = tk.Canvas(self.live_egram_win, width=900, height=360, bg="white")
+		self.live_egram_canvas.pack(padx=8, pady=8)
+		btn = tk.Button(self.live_egram_win, text="Stop", command=self._stop_live_egram)
+		btn.pack(pady=(0,8))
+
+	def _poll_live_egram(self):
+		if not self._live_egram_running:
+			return
+		try:
+			pkt = self.serial.read_packet()
+			if pkt:
+				# Assume egram data is in pkt[4:-1] as a simple example (real protocol may differ)
+				# For demo, treat as two 2-byte signed ints: atrial, ventricular (in mV*1000)
+				data = pkt[4:-1]
+				if len(data) >= 4:
+					atr = int.from_bytes(data[0:2], 'little', signed=True) / 1000.0
+					vent = int.from_bytes(data[2:4], 'little', signed=True) / 1000.0
+					self._update_live_egram_plot(atr, vent)
+		except Exception as e:
+			self._append_log(f"Live egram error: {e}")
+		self.after(50, self._poll_live_egram)
+
+	def _update_live_egram_plot(self, atrial_mv, ventricular_mv):
+		# Simple scrolling plot: keep last N points
+		if not hasattr(self, '_live_egram_data'):
+			self._live_egram_data = []
+		self._live_egram_data.append((atrial_mv, ventricular_mv))
+		if len(self._live_egram_data) > 900:
+			self._live_egram_data = self._live_egram_data[-900:]
+		# Redraw
+		c = self.live_egram_canvas
+		c.delete("all")
+		h = 360; w = 900
+		pady = 20
+		plot_h = h - 2*pady
+		# Find min/max for scaling
+		atr_vals = [a for a, v in self._live_egram_data]
+		vent_vals = [v for a, v in self._live_egram_data]
+		vmin = min(atr_vals + vent_vals)
+		vmax = max(atr_vals + vent_vals)
+		if vmin == vmax:
+			vmin -= 1.0; vmax += 1.0
+		# Draw axes
+		c.create_rectangle(0, pady, w, h-pady, outline="#ddd")
+		# Draw atrial (blue) and ventricular (red)
+		for i in range(1, len(self._live_egram_data)):
+			x0 = w - len(self._live_egram_data) + i - 1
+			x1 = w - len(self._live_egram_data) + i
+			y0a = pady + plot_h - ((atr_vals[i-1] - vmin) / (vmax - vmin)) * plot_h
+			y1a = pady + plot_h - ((atr_vals[i] - vmin) / (vmax - vmin)) * plot_h
+			y0v = pady + plot_h - ((vent_vals[i-1] - vmin) / (vmax - vmin)) * plot_h
+			y1v = pady + plot_h - ((vent_vals[i] - vmin) / (vmax - vmin)) * plot_h
+			c.create_line(x0, y0a, x1, y1a, fill="blue")
+			c.create_line(x0, y0v, x1, y1v, fill="red")
+		# Legend
+		c.create_rectangle(w-180, 8, w-8, 48, fill="#f7f7f7", outline="#ccc")
+		c.create_line(w-170, 20, w-140, 20, fill="blue")
+		c.create_text(w-130, 20, anchor="w", text="Atrial (mV)")
+		c.create_line(w-170, 34, w-140, 34, fill="red")
+		c.create_text(w-130, 34, anchor="w", text="Ventricular (mV)")
 
 		# Right: packet log
-		right = tk.Frame(f)
+
+		right = tk.Frame(self.frame_dcm)
 		right.pack(side="left", padx=(12,0))
 		tk.Label(right, text="Comm Log", font=("Arial", 10)).pack(pady=(0,4))
 		self.log_text = tk.Text(right, width=48, height=16, state="disabled")
 		self.log_text.pack(pady=(4,0))
 
 		# placeholder for egram viewer + quick egram actions
-		frame_eg = tk.Frame(f)
+		frame_eg = tk.Frame(self.frame_dcm)
 		frame_eg.pack(side="bottom", pady=(12,0))
 		tk.Label(frame_eg, text="Egram Viewer (placeholder)", fg="gray").pack(side="left")
-		# quick egram snapshot / list buttons
 		try:
 			tk.Button(frame_eg, text="Save Egram Snapshot", command=self._ui_save_egram).pack(side="left", padx=(8,4))
 		except Exception:
-			# if ttk isn't imported, fall back
 			btn = tk.Button(frame_eg, text="Save Egram Snapshot", command=self._ui_save_egram)
 			btn.pack(side="left", padx=(8,4))
 		try:
@@ -565,8 +794,77 @@ class WelcomeApp(tk.Tk):
 
 		# initial device list
 		self._refresh_device_list()
-		# trace selection
 		self.device_var.trace_add("write", self._on_device_selected)
+
+	def _connect_serial(self):
+		port = self.serial_port_var.get().strip()
+		if not port:
+			self._append_log("No serial port specified")
+			return
+		try:
+			self.serial = dcm_comm.DCMComm(port)
+			self.serial_connected = True
+			self.serial_port = port
+			self.status_label.config(text=f"Serial: {port}", bg="lightblue")
+			self.serial_btn.config(state="disabled")
+			self.serial_disc_btn.config(state="normal")
+			self._append_log(f"Serial connected on {port}")
+		except Exception as e:
+			self._append_log(f"Serial connect error: {e}")
+			messagebox.showerror("Serial Error", f"Could not open serial port: {e}")
+
+	def _disconnect_serial(self):
+		if self.serial:
+			try:
+				self.serial.close()
+			except Exception:
+				pass
+		self.serial = None
+		self.serial_connected = False
+		self.serial_port = None
+		self.status_label.config(text="Disconnected", bg="lightgray")
+		self.serial_btn.config(state="normal")
+		self.serial_disc_btn.config(state="disabled")
+		self._append_log("Serial disconnected")
+
+	def _send_params_to_device(self):
+		if not self.serial_connected or not self.serial:
+			self._append_log("Serial not connected")
+			messagebox.showwarning("Serial", "Serial port not connected")
+			return
+		params = self._gather_ui_params()
+		# Pack parameters into bytes (implement in dcm_comm)
+		try:
+			params_bytes = dcm_comm.pack_params(params)
+			self.serial.send_params(params_bytes)
+			self._append_log("Sent parameters to device")
+		except Exception as e:
+			self._append_log(f"Send params error: {e}")
+			messagebox.showerror("Send Error", f"Failed to send parameters: {e}")
+
+	def _request_egram(self):
+		if not self.serial_connected or not self.serial:
+			self._append_log("Serial not connected")
+			messagebox.showwarning("Serial", "Serial port not connected")
+			return
+		try:
+			self.serial.request_egram()
+			self._append_log("Requested egram from device")
+		except Exception as e:
+			self._append_log(f"Request egram error: {e}")
+			messagebox.showerror("Egram Error", f"Failed to request egram: {e}")
+
+	def _stop_egram(self):
+		if not self.serial_connected or not self.serial:
+			self._append_log("Serial not connected")
+			messagebox.showwarning("Serial", "Serial port not connected")
+			return
+		try:
+			self.serial.stop_egram()
+			self._append_log("Stopped egram transmission")
+		except Exception as e:
+			self._append_log(f"Stop egram error: {e}")
+			messagebox.showerror("Egram Error", f"Failed to stop egram: {e}")
 
 	# -----------------------
 	# DCM behaviors
@@ -685,6 +983,10 @@ class WelcomeApp(tk.Tk):
 		# the user explicitly disconnects.
 
 	def _append_log(self, text):
+		if not hasattr(self, 'log_text') or self.log_text is None:
+			# Optionally print to console as fallback
+			print(f"LOG: {text}")
+			return
 		self.log_text.config(state="normal")
 		self.log_text.insert("end", f"{time.strftime('%H:%M:%S')} {text}\n")
 		self.log_text.see("end")

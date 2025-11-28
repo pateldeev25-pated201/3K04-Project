@@ -1,12 +1,12 @@
 {
   "device_id": "PM-A-0001",
   "param_set": {
-    "mode": "AOO",
+    "mode": "VVI",
     "LRL": 30,
-    "URL": 120,
-    "A_atrial_amp": 1,
+    "URL": 129,
+    "A_atrial_amp": 0.5,
     "A_pulse_width": 1,
-    "V_ventricular_amp": 1,
+    "V_ventricular_amp": 7.5,
     "V_pulse_width": 1,
     "VRP": 250,
     "ARP": 200,
