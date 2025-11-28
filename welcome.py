@@ -1,4 +1,3 @@
-
 import tkinter as tk
 from tkinter import messagebox, simpledialog
 import json
@@ -600,7 +599,7 @@ class WelcomeApp(tk.Tk):
 
 		# Serial port controls
 		tk.Label(left, text="Serial Port:").pack(pady=(2,0))
-		self.serial_port_var = tk.StringVar(value="COM3")  # Default port, update as needed
+		self.serial_port_var = tk.StringVar(value="COM0")  # Default port, update as needed
 		self.serial_entry = tk.Entry(left, textvariable=self.serial_port_var, width=16)
 		self.serial_entry.pack(pady=(0,2))
 		self.serial_btn = tk.Button(left, text="Connect Serial", width=18, command=self._connect_serial)
@@ -716,6 +715,10 @@ class WelcomeApp(tk.Tk):
 	def _poll_live_egram(self):
 		if not self._live_egram_running:
 			return
+		if self.serial is None:
+			# add a window popup that says serial disconnected
+			self._append_log("Serial disconnected, stopping live egram")
+			return  # Serial connection is not available
 		try:
 			pkt = self.serial.read_packet()
 			if pkt:
