@@ -1083,13 +1083,8 @@ class WelcomeApp(tk.Tk):
 		# Render required params in order
 		# Display required params in three columns, starting at row 1 (below mode selector)
 		col_count = 3
-		amp_pw_canons = ["A_atrial_amp", "A_pulse_width", "V_ventricular_amp", "V_pulse_width"]
-		amp_pw_params = [p for p in REQUIRED_PARAMS if p[1] in amp_pw_canons]
-		other_params = [p for p in REQUIRED_PARAMS if p[1] not in amp_pw_canons]
-
-		# Render all other params in grid
-		idx = 0
-		for param in other_params:
+		# Uniform grid: iterate REQUIRED_PARAMS directly
+		for idx, param in enumerate(REQUIRED_PARAMS):
 			display, canon, unit = param
 			col = idx % col_count
 			row_offset = 1 + (idx // col_count)
@@ -1103,24 +1098,6 @@ class WelcomeApp(tk.Tk):
 			var = tk.StringVar(value=str(val))
 			ent = tk.Entry(self.params_frame, textvariable=var, width=12)
 			ent.grid(row=row_offset, column=col*2+1, pady=2)
-			self.param_vars[canon] = var
-			self.param_entries[canon] = ent
-			idx += 1
-
-		# Now render the four amp/pw params at the very bottom, each in their own row
-		last_row = 1 + (len(other_params) // col_count)
-		for i, param in enumerate(amp_pw_params):
-			display, canon, unit = param
-			found = _find_matching_key(params, [display, canon, display.replace(" ", "")])
-			val = ""
-			if found:
-				val = params.get(found, "")
-				matched_keys.add(found)
-			label_text = f"{display} ({unit}):"
-			tk.Label(self.params_frame, text=label_text).grid(row=last_row + i, column=0, sticky="e", padx=(0,6), pady=2)
-			var = tk.StringVar(value=str(val))
-			ent = tk.Entry(self.params_frame, textvariable=var, width=12)
-			ent.grid(row=last_row + i, column=1, pady=2)
 			self.param_vars[canon] = var
 			self.param_entries[canon] = ent
 		# Render any remaining keys present in params
